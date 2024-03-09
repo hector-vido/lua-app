@@ -1,0 +1,30 @@
+version: '3.0'
+
+services:
+
+  app:
+    build:
+      context: ../
+      dockerfile: container/Containerfile
+    ports:
+    - 8080:8080
+    environment:
+    - MYSQL_HOST=db
+    - MYSQL_USER=lua
+    - MYSQL_PASSWORD=4linux
+    - MYSQL_DATABASE=lua
+    - SECRET=UxNGNjv5qjbmhpbRjTnVNGknUEzBQnee
+    volumes:
+    - ./nginx-resolver-local.conf:/usr/local/openresty/nginx/conf/nginx.conf:z
+  db:
+    image: mysql:8.3
+    environment:
+    - MYSQL_ROOT_PASSWORD=!Abc123
+    - MYSQL_USER=lua
+    - MYSQL_PASSWORD=4linux
+    - MYSQL_DATABASE=lua
+    volumes:
+    - mariadb:/var/lib/mysql
+
+volumes:
+  mysql: {}

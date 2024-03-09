@@ -1,0 +1,76 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: lua
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: lua
+  labels:
+    app: lua
+  name: lua
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lua
+  template:
+    metadata:
+      labels:
+        app: lua
+    spec:
+      initContainers:
+      - image: hectorvido/lua-app
+        name: migration
+        envFrom:
+        - secretRef:
+            name: lua
+        command:
+        - lapis 
+        args:
+        - migrate
+      containers:
+      - image: hectorvido/lua-app
+        name: lua
+        envFrom:
+        - secretRef:
+            name: lua
+        ports:
+        - name: web
+          containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: lua
+  name: lua
+  namespace: lua
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: lua
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: lua
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+  namespace: lua
+spec:
+  rules:
+  - host: "lua.192-168-99-102.nip.io"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: lua
+            port:
+              number: 80
